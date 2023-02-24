@@ -1,24 +1,33 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import { createTopic, TopicClient } from 'webtopics';
+import { io } from 'socket.io-client';
+import { z } from 'zod';
+
+const stageStateSchema = z.number()
+type StageState = z.infer<typeof stageStateSchema>;
+const statgeStateScheme = createTopic("stage", stageStateSchema);
+
+function useStageState() {
+  const [stageState, setStageState] = React.useState<StageState>(0);
+  const clientRef = React.useRef<TopicClient>();
+  React.useEffect(() => {
+    const socket = io("http://172.20.156.212:3000");
+    console.log("socket", socket);
+    const client = new TopicClient(socket);
+    clientRef.current = client;
+    client.sub(statgeStateScheme, setStageState);
+  }, []);
+  return stageState;
+}
 
 function App() {
+  const stageState = useStageState();
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>There should be a number under here!</h1>
+      <h1>{stageState}</h1>
     </div>
   );
 }
