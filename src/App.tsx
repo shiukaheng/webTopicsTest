@@ -6,17 +6,20 @@ import { z } from 'zod';
 
 const stageStateSchema = z.number()
 type StageState = z.infer<typeof stageStateSchema>;
-const statgeStateScheme = createTopic("stage", stageStateSchema);
+const stageTopic = createTopic("sample", stageStateSchema);
 
 function useStageState() {
   const [stageState, setStageState] = React.useState<StageState>(0);
   const clientRef = React.useRef<TopicClient>();
   React.useEffect(() => {
-    const socket = io("http://172.20.156.212:3000");
+    const socket = io("http://localhost:3000");
     console.log("socket", socket);
     const client = new TopicClient(socket);
     clientRef.current = client;
-    client.sub(statgeStateScheme, setStageState);
+    client.sub(stageTopic, (data)=>{
+      setStageState(data);
+      console.log("data", data)
+    })
   }, []);
   return stageState;
 }
